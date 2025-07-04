@@ -30,13 +30,56 @@
             transform: scale(1.05);
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
+        .login-register {
+            width: 300px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .login-register input {
+            width: 100%;
+            height: 40px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .login-register button {
+            width: 100%;
+            height: 40px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .swap-mechanic {
+            width: 300px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>FIXORIUM</h1>
+        <h1>Welcome to Fixorium</h1>
     </header>
     <marquee id="fixorium-coin-price">Fixorium Coin Price: $1.50 | Circulating Supply: 10,000,000 FXR | Market Cap: $15,000,000</marquee>
+    <section id="actions">
+        <div>
+            <button id="connect-wallet-btn" onclick="connectWallet()">Connect Wallet</button>
+            <button id="deploy-token-btn" onclick="deployToken()">Deploy Token</button>
+            <button id="swap-btn" onclick="showSwapMechanic()">Swap Tokens</button>
+            <button id="register-btn" onclick="showRegister()">Register</button>
+            <button id="login-btn" onclick="showLogin()">Login</button>
+            <button id="logout-btn" onclick="logout()" style="display: none;">Logout</button>
+        </div>
+    </section>
     <section id="about">
         <h2>About Fixorium</h2>
         <p>Fixorium is a revolutionary blockchain platform that empowers users to create, swap, and trade tokens with zero fees. Our mission is to provide a seamless and cost-effective experience for users to participate in the blockchain ecosystem.</p>
@@ -52,21 +95,5 @@
     <section id="features">
         <h2>Key Features</h2>
         <ul>
-            <li class="feature" style="background-color:                                                                   
-                <strong>Deploy Tokens for Free:</strong> Create and deploy your own tokens on our blockchain without incurring any costs.
-                <button style="float: right; background-color: #4CAF50; color: #fff; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;" onclick="learnMore()">Learn More</button>
-            </li>
-            <li class="feature" style="background-color:                                                                   
-                <strong>Swap with 0 Fees:</strong> Swap tokens with other users on our platform without paying any fees.
-                <button style="float: right; background-color: #4CAF50; color: #fff; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;" onclick="swapTokens()">Swap Now</button>
-            </li>
-            <li class="feature" style="background-color:                                                                   
-                <strong>Join Fixorium to Earn:</strong> Participate in our ecosystem and earn rewards by contributing to the growth and adoption of Fixorium Coin.
-                <button style="float: right; background-color: #4CAF50; color: #fff; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;" onclick="getStarted()">Get Started</button>
-            </li>
-        </ul>
-    </section>
-    <section id="actions">
-        <div>
-            <button id="connect-wallet-btn" onclick="connectWallet()">Connect Wallet</button>
-            <button id="deploy-token-btn" onclick="deployToken()">Deploy Token</
+            <li class="feature" style="background-color: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                <strong>Deploy Tokens for Free:</strong> Create and deploy your own tokens on
