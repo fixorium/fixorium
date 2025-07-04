@@ -1,0 +1,30 @@
+ /* CSS styles for Fixorium website */
+/* Global styles */
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Section styles */
+#about {
+    background-color: #f7f7f7;
+    padding: 20px;
+}
+
+#wallet {
+    background-color: #fff;
+    padding: 20px;
+}
+
+/* Button styles */
+button {
+    background-color: #4CAF50;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #3e8e41;
+}
