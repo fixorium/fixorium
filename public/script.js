@@ -22,7 +22,38 @@ const deployNewToken = async () => {
 const swapTokens = async () => {
     // Code to swap tokens
 };
+// script.js
+const tokenList = document.getElementById('token-list');
+const swapBtn = document.getElementById('swap-btn');
 
+// Populate token list
+fetch('https:                          
+    .then(response => response.json())
+    .then(data => {
+        data.forEach(token => {
+            const row = document.createElement('//api.example.com/tokens')
+    .then(response => response.json())
+    .then(data => {
+        data.forEach(token => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${token.name}</td>
+                <td>${token.price}</td>
+                <td>${token.marketCap}</td>
+                <td>${token.liquidity}</td>
+            `;
+            tokenList.appendChild(row);
+        });
+    })
+    .catch(error => console.error(error));
+
+                     
+swapBtn.addEventListener('// Swap functionality
+swapBtn.addEventListener('click', () => {
+    const token1 = document.getElementById('token1').value;
+    const token2 = document.getElementById('token2').value;
+    // Implement swap logic here
+});
 // Function to trade tokens
 const tradeTokens = async () => {
     // Code to trade tokens
