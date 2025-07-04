@@ -1,0 +1,12 @@
+ {
+    "name": "fixorium",
+    "version": "1.0.0",
+    "description": "Fixorium website",
+    "main": "script.js",
+    "scripts": {
+        "start": "node script.js"
+    },
+    "dependencies": {
+        "web3": "^1.7.3"
+    }
+}
