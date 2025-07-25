@@ -1,451 +1,573 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PumpFun Swap with Secure API Key</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<title>PumpFun Swap</title>
 <style>
-  body {
-    background: #121212;
-    color: white;
-    font-family: Arial, sans-serif;
-    max-width: 480px;
-    margin: 20px auto;
-    padding: 15px;
+  /* Light blue + white theme with mobile fit */
+  html, body {
+    margin: 0; padding: 0;
+    background: #eaf6ff;
+    color: #0b3d91;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    height: 100vh;
+    -webkit-tap-highlight-color: transparent;
   }
-  h1 { text-align: center; margin-bottom: 10px; }
-  select, input, button {
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0 15px 0;
-    border-radius: 5px;
-    border: none;
+  #app {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    box-sizing: border-box;
   }
   button {
-    background-color: #5865f2;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
+    background: #4a90e2;
     color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    user-select: none;
   }
   button:disabled {
-    background-color: #666;
+    background: #a5c0f1;
     cursor: not-allowed;
   }
-  .status {
-    margin-top: 15px;
-    font-style: italic;
-    color: #ff8888;
-  }
-  .quote-box {
-    background: #222;
-    padding: 12px;
+  .wallet-info {
+    margin-bottom: 16px;
+    background: white;
     border-radius: 8px;
-    margin-bottom: 20px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
   }
-  #wallet-section {
+  .wallet-address {
+    font-weight: bold;
+    overflow-wrap: anywhere;
+    font-size: 0.9rem;
+  }
+  .balance {
+    margin-top: 8px;
+  }
+  .search-container {
+    margin-bottom: 12px;
+    position: relative;
+  }
+  input[type="text"], select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: 1px solid #bed4f7;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: 1px solid #bed4f7;
+    font-size: 16px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+  }
+  .token-list {
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid #bed4f7;
+    background: white;
+    border-radius: 6px;
+  }
+  .token-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid #bed4f7;
+    cursor: pointer;
+    gap: 12px;
+  }
+  .token-item:last-child {
+    border-bottom: none;
+  }
+  .token-item:hover {
+    background: #d7e7ff;
+  }
+  .token-logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #c5d9fb;
     display: flex;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
+    align-items: center;
+    font-weight: 700;
+    color: #4a90e2;
+    font-size: 14px;
+    overflow: hidden;
   }
-  #wallet-status {
-    text-align: center;
-    margin-bottom: 10px;
+  .token-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
-  #api-key-section {
-    margin-bottom: 20px;
+  .swap-section {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
-  #api-key-input {
-    font-family: monospace;
+  .quote-box {
+    background: white;
+    border-radius: 8px;
+    padding: 10px 16px;
+    box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+    margin-bottom: 16px;
+  }
+  .status {
+    min-height: 24px;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #e03e3e;
+    user-select: none;
+  }
+  @media (max-width: 460px) {
+    #app {
+      padding: 8px;
+    }
+    button {
+      font-size: 14px;
+      padding: 10px;
+    }
   }
 </style>
 </head>
 <body>
+<div id="app">
+  <button id="connect-btn">Connect Phantom Wallet</button>
 
-<h1>PumpFun Token Swap</h1>
+  <div id="wallet-section" style="display:none;" class="wallet-info">
+    <div>Wallet: <span id="wallet-address" class="wallet-address"></span></div>
+    <div id="wallet-balance" class="balance">SOL Balance: Loading...</div>
+    <div id="token-balances" class="balance" style="margin-top:6px;">Tokens: Loading...</div>
+  </div>
 
-<!-- Wallet connection -->
-<div id="wallet-section">
-  <button id="connect-phantom">Connect Phantom</button>
-  <button id="connect-solflare">Connect Solflare</button>
-</div>
-<div id="wallet-status">Wallet: <span id="wallet-address">Not connected</span></div>
+  <div id="swap-section" class="swap-section" style="display:none;">
+    <div>
+      <div class="search-container">
+        <input type="text" id="token-search" placeholder="Search tokens..." autocomplete="off" />
+        <div id="token-list" class="token-list" style="display:none;"></div>
+      </div>
 
-<!-- API key input shown only AFTER wallet connection -->
-<div id="api-key-section" style="display:none;">
-  <label for="api-key-input">Enter your PumpFun API Key:</label>
-  <input type="password" id="api-key-input" placeholder="Paste your PumpFun API key here" />
-  <button id="save-api-key-btn">Save API Key</button>
-</div>
+      <label for="from-token">From Token:</label>
+      <input readonly id="from-token" value="SOL" />
+      
+      <label for="to-token">To Token:</label>
+      <input readonly id="to-token" placeholder="Select token to swap to" />
 
-<label for="from-token">Swap from:</label>
-<select id="from-token">
-  <option value="SOL">SOL</option>
-</select>
+      <input type="number" id="swap-amount" placeholder="Amount to swap" min="0" step="any" />
 
-<label for="to-token">Swap to:</label>
-<select id="to-token"></select>
+      <button id="get-quote-btn" disabled>Get Quote</button>
+    </div>
 
-<label for="amount">Amount to swap:</label>
-<input type="number" min="0" step="any" id="amount" placeholder="Enter amount" />
+    <div id="quote-box" class="quote-box" style="display:none;"></div>
 
-<button id="get-quote-btn" disabled>Get Quote</button>
+    <button id="swap-btn" disabled>Execute Swap</button>
 
-<div class="quote-box" id="quote-box" style="display:none;">
-  <div><b>Price:</b> <span id="price"></span></div>
-  <div><b>Estimated received:</b> <span id="estimated-received"></span></div>
-  <div><b>Liquidity:</b> <span id="liquidity"></span></div>
-  <button id="swap-btn" disabled>Execute Swap</button>
+    <div id="status" class="status"></div>
+  </div>
 </div>
 
-<div class="status" id="status"></div>
-
-<div class="prices-live">
-  <h3>Live Token Prices</h3>
-  <ul id="prices-list"></ul>
-</div>
-
-<!-- Load Solana web3 from CDN -->
-<script src="https://unpkg.com/@solana/web3.js@1.73.0/lib/index.iife.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.73.0/lib/index.iife.min.js"></script>
 
 <script>
-(async() => {
-  let walletProvider = null;
-  let selectedWalletName = null;
-  let walletPublicKey = null;
-  let pumpFunApiKey = null; // Stored securely in-memory here
+(async () => {
+  const {
+    Connection,
+    PublicKey,
+    clusterApiUrl,
+    LAMPORTS_PER_SOL
+  } = solanaWeb3;
 
-  const walletAddressSpan = document.getElementById('wallet-address');
-  const connectPhantomBtn = document.getElementById('connect-phantom');
-  const connectSolflareBtn = document.getElementById('connect-solflare');
+  // PumpFun API base URL (adjust if needed)
+  const PUMPFUN_API_BASE = 'https://api.pumpfun.io/v1';
 
-  const apiKeySection = document.getElementById('api-key-section');
-  const apiKeyInput = document.getElementById('api-key-input');
-  const saveApiKeyBtn = document.getElementById('save-api-key-btn');
-
-  const fromTokenSelect = document.getElementById('from-token');
-  const toTokenSelect = document.getElementById('to-token');
-  const amountInput = document.getElementById('amount');
+  // Phantom wallet check & connect
+  const connectBtn = document.getElementById('connect-btn');
+  const walletSection = document.getElementById('wallet-section');
+  const walletAddressEl = document.getElementById('wallet-address');
+  const walletBalanceEl = document.getElementById('wallet-balance');
+  const tokenBalancesEl = document.getElementById('token-balances');
+  const swapSection = document.getElementById('swap-section');
+  const fromTokenInput = document.getElementById('from-token');
+  const toTokenInput = document.getElementById('to-token');
+  const swapAmountInput = document.getElementById('swap-amount');
   const getQuoteBtn = document.getElementById('get-quote-btn');
-  const swapBtn = document.getElementById('swap-btn');
   const quoteBox = document.getElementById('quote-box');
-  const priceSpan = document.getElementById('price');
-  const estReceivedSpan = document.getElementById('estimated-received');
-  const liquiditySpan = document.getElementById('liquidity');
-  const statusDiv = document.getElementById('status');
-  const pricesList = document.getElementById('prices-list');
+  const swapBtn = document.getElementById('swap-btn');
+  const statusEl = document.getElementById('status');
+  const tokenSearchInput = document.getElementById('token-search');
+  const tokenListDiv = document.getElementById('token-list');
 
-  function setStatus(msg, isError = false) {
-    statusDiv.textContent = msg;
-    statusDiv.style.color = isError ? "#ff5555" : "#88ff88";
+  const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
+
+  // State variables
+  let walletPublicKey = null;
+  let tokens = [];
+  let filteredTokens = [];
+  let selectedToToken = null;
+  let userTokenBalances = {}; // Store user's PumpFun token balances
+  let latestQuote = null;
+
+  // Utility: fetch JSON helper with error handling
+  async function fetchJSON(url, options = {}) {
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
+      return await res.json();
+    } catch (e) {
+      throw e;
+    }
   }
 
-  function resetQuote() {
-    quoteBox.style.display = "none";
-    priceSpan.textContent = "";
-    estReceivedSpan.textContent = "";
-    liquiditySpan.textContent = "";
-    setStatus("");
-    swapBtn.disabled = true;
-  }
-
-  // --- Wallet connections ---
-  async function connectPhantom() {
+  // Connect Phantom wallet, keep persistent connection until user disconnects
+  async function connectWallet() {
     if (!window.solana || !window.solana.isPhantom) {
-      alert("Phantom wallet not detected. Please install it from https://phantom.app/");
+      alert("Phantom wallet not found. Please install it.");
       return;
     }
     try {
-      const resp = await window.solana.connect();
-      walletProvider = window.solana;
-      selectedWalletName = "Phantom";
+      const resp = await window.solana.connect({ onlyIfTrusted: true });
       walletPublicKey = resp.publicKey;
-      walletAddressSpan.textContent = walletPublicKey.toString();
-      setStatus(`Connected Phantom wallet`, false);
-      postWalletConnect();
-    } catch (err) {
-      setStatus("Phantom connection rejected or failed", true);
+      setupAfterConnect();
+    } catch (_) {
+      try {
+        // fallback: prompt user connection manually
+        const resp = await window.solana.connect();
+        walletPublicKey = resp.publicKey;
+        setupAfterConnect();
+      } catch (e) {
+        setStatus('Wallet connection denied or failed');
+      }
     }
   }
 
-  async function connectSolflare() {
-    if (!window.solflare) {
-      alert("Solflare wallet not detected. Please install it from https://solflare.com");
-      return;
+  // Disconnect wallet (user trigger)
+  async function disconnectWallet() {
+    if (window.solana && window.solana.isPhantom) {
+      try {
+        await window.solana.disconnect();
+      } catch (e) {}
     }
-    try {
-      await window.solflare.connect();
-      walletProvider = window.solflare;
-      selectedWalletName = "Solflare";
-      walletPublicKey = walletProvider.publicKey;
-      walletAddressSpan.textContent = walletPublicKey.toString();
-      setStatus(`Connected Solflare wallet`, false);
-      postWalletConnect();
-    } catch (err) {
-      setStatus("Solflare connection rejected or failed", true);
-    }
+    walletPublicKey = null;
+    resetUI();
   }
 
-  connectPhantomBtn.addEventListener("click", connectPhantom);
-  connectSolflareBtn.addEventListener("click", connectSolflare);
+  // Setup UI after wallet connection
+  async function setupAfterConnect() {
+    connectBtn.style.display = 'none';
+    walletSection.style.display = 'block';
+    swapSection.style.display = 'block';
+    walletAddressEl.textContent = walletPublicKey.toBase58();
+    statusEl.textContent = '';
+    await refreshBalances();
+    await fetchPumpFunTokens();
+    setupTokenSearchListeners();
+  }
 
-  // After wallet connected, show API key input
-  function postWalletConnect() {
-    apiKeySection.style.display = 'block';
+  // Reset UI on disconnect
+  function resetUI() {
+    connectBtn.style.display = 'block';
+    walletSection.style.display = 'none';
+    walletAddressEl.textContent = '';
+    walletBalanceEl.textContent = '';
+    tokenBalancesEl.textContent = '';
+    swapSection.style.display = 'none';
+    fromTokenInput.value = 'SOL';
+    toTokenInput.value = '';
+    swapAmountInput.value = '';
     getQuoteBtn.disabled = true;
     swapBtn.disabled = true;
+    quoteBox.style.display = 'none';
+    quoteBox.textContent = '';
+    tokenListDiv.style.display = 'none';
+    tokenListDiv.innerHTML = '';
+    tokenSearchInput.value = '';
+    selectedToToken = null;
+    latestQuote = null;
+    statusEl.textContent = '';
   }
 
-  // --- API key input handling ---
-  saveApiKeyBtn.addEventListener('click', () => {
-    const val = apiKeyInput.value.trim();
-    if (!val) {
-      alert('Please enter a valid PumpFun API key');
-      return;
-    }
-    pumpFunApiKey = val;
-    setStatus('API Key saved securely in session. You can now use swap functions.');
-    getQuoteBtn.disabled = false;
-  });
+  // Refresh wallet SOL balance and PumpFun tokens balance
+  async function refreshBalances() {
+    walletBalanceEl.textContent = 'SOL Balance: Loading...';
+    tokenBalancesEl.textContent = 'Tokens: Loading...';
 
-  // --- Tokens fetching ---
-  let tokens = [];
-  async function fetchNewTokens() {
-    if(!pumpFunApiKey) {
-      setStatus("Enter API key first.", true);
-      return;
+    // Get SOL balance
+    try {
+      const lamports = await connection.getBalance(walletPublicKey);
+      const solBal = lamports / LAMPORTS_PER_SOL;
+      walletBalanceEl.textContent = `SOL Balance: ${solBal.toFixed(6)}`;
+    } catch (e) {
+      walletBalanceEl.textContent = 'SOL Balance: Error';
     }
+
+    // Fetch user's PumpFun tokens balances from API
+    try {
+      const tokensResp = await fetchJSON(`${PUMPFUN_API_BASE}/accounts/${walletPublicKey.toBase58()}/tokens`);
+      // tokensResp.tokens expected as [{ symbol, amount, tokenAddress, decimals, logoURI }]
+      userTokenBalances = {};
+      let tokenDisplay = '';
+      tokensResp.tokens.forEach(t => {
+        userTokenBalances[t.symbol] = t;
+        tokenDisplay += `${t.symbol}: ${parseFloat(t.amount).toFixed(4)}; `;
+      });
+      tokenBalancesEl.textContent = tokenDisplay || 'No PumpFun tokens found';
+    } catch {
+      tokenBalancesEl.textContent = 'Tokens: Error fetching token balances';
+      userTokenBalances = {};
+    }
+  }
+
+  // Fetch PumpFun tokens list for searching & selection
+  async function fetchPumpFunTokens() {
     try {
       setStatus('Loading tokens...');
-      const resp = await fetch(`https://api.pumpfun.io/v1/tokens/new`, {
-        headers: { 'Authorization': `Bearer ${pumpFunApiKey}` },
-      });
-      if (!resp.ok) throw new Error('Failed to fetch tokens');
-      const data = await resp.json();
-      tokens = data.tokens || [];
-
-      toTokenSelect.innerHTML = "";
-      for (const t of tokens) {
-        let opt = document.createElement('option');
-        opt.value = t.symbol;
-        opt.textContent = `${t.symbol} (${t.name})`;
-        toTokenSelect.appendChild(opt);
-      }
-      if (toTokenSelect.options.length > 0 && !toTokenSelect.value) {
-        toTokenSelect.value = tokens[0].symbol;
-      }
-      setStatus('Tokens loaded');
+      const tokenRes = await fetchJSON(`${PUMPFUN_API_BASE}/tokens/new`);
+      tokens = tokenRes.tokens || [];
+      setStatus('');
     } catch (e) {
-      setStatus('Error loading tokens: ' + e.message, true);
+      setStatus("Could not load PumpFun tokens");
+      tokens = [];
     }
   }
 
-  // --- Get quote ---
-  let lastQuote = null;
+  // Setup token search input handlers
+  function setupTokenSearchListeners() {
+    tokenSearchInput.addEventListener('input', () => {
+      const query = tokenSearchInput.value.trim().toLowerCase();
+      if (!query) {
+        tokenListDiv.style.display = 'none';
+        tokenListDiv.innerHTML = '';
+        return;
+      }
+      filteredTokens = tokens.filter(t => {
+        return t.symbol.toLowerCase().includes(query) || (t.name && t.name.toLowerCase().includes(query));
+      });
+      showTokenList();
+    });
+  }
+
+  // Display filtered tokens in dropdown
+  function showTokenList() {
+    tokenListDiv.innerHTML = '';
+    if (filteredTokens.length === 0) {
+      tokenListDiv.innerHTML = '<div style="padding:6px;color:#999">No tokens found</div>';
+      tokenListDiv.style.display = 'block';
+      return;
+    }
+    filteredTokens.slice(0, 30).forEach((token) => {
+      const div = document.createElement('div');
+      div.className = 'token-item';
+      div.title = token.name || '';
+      div.innerHTML = `
+        <div class="token-logo">${renderTokenLogo(token)}</div>
+        <div>${token.symbol}</div>
+      `;
+      div.addEventListener('click', () => {
+        toTokenInput.value = token.symbol;
+        selectedToToken = token;
+        tokenListDiv.style.display = 'none';
+        tokenSearchInput.value = '';
+        getQuoteBtn.disabled = false;
+        swapBtn.disabled = true;
+        quoteBox.style.display = 'none';
+        quoteBox.innerHTML = '';
+        setStatus('');
+      });
+      tokenListDiv.appendChild(div);
+    });
+    tokenListDiv.style.display = 'block';
+  }
+
+  // Render token logo img or fallback initials
+  function renderTokenLogo(token) {
+    if(token.logoURI) {
+      return `<img src="${token.logoURI}" alt="${token.symbol}" />`;
+    }
+    return `<span>${token.symbol.slice(0, 2)}</span>`;
+  }
+
+  // Show status messages
+  function setStatus(msg) {
+    statusEl.textContent = msg;
+  }
+
+  // Clear quote section
+  function clearQuote() {
+    quoteBox.style.display = 'none';
+    quoteBox.textContent = '';
+    latestQuote = null;
+    swapBtn.disabled = true;
+  }
+
+  // Get swap quote from PumpFun API or best available aggregator
   async function getQuote() {
-    resetQuote();
-    if (!walletPublicKey) {
-      setStatus('Connect a wallet first', true);
+    clearQuote();
+    setStatus('');
+
+    const amountStr = swapAmountInput.value.trim();
+    if (!amountStr || isNaN(amountStr) || Number(amountStr) <= 0) {
+      setStatus('Enter valid amount');
       return;
     }
-    if (!pumpFunApiKey) {
-      setStatus('Enter your PumpFun API key first', true);
-      return;
-    }
-
-    const fromToken = fromTokenSelect.value;
-    const toToken = toTokenSelect.value;
-    const amount = amountInput.value.trim();
-
-    if (!fromToken || !toToken || fromToken === toToken || !amount || Number(amount) <= 0) {
-      setStatus('Select valid tokens and enter amount', true);
+    if (!selectedToToken) {
+      setStatus('Select a "To Token" to swap');
       return;
     }
 
-    setStatus('Fetching quote...');
+    const fromToken = fromTokenInput.value;
+    const toToken = selectedToToken.symbol;
+
+    // Disable button while fetching quote
     getQuoteBtn.disabled = true;
+    setStatus('Fetching quote...');
+
+    // Call PumpFun quote API
+    try {
+      // PumpFun swap quote expects: fromToken, toToken, amount (amount in base unit string)
+      // For SOL, amount is in SOL decimals (not lamports)
+
+      const res = await fetchJSON(`${PUMPFUN_API_BASE}/swap/quote`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          fromToken,
+          toToken,
+          amount: amountStr
+        })
+      });
+
+      if (res.error) {
+        throw new Error(res.error);
+      }
+      latestQuote = res;
+      displayQuote(res);
+      swapBtn.disabled = false;
+      setStatus('');
+    } catch (e) {
+      setStatus('Failed to fetch quote: ' + e.message);
+    }
+    getQuoteBtn.disabled = false;
+  }
+
+  // Display quote details
+  function displayQuote(quote) {
+    quoteBox.style.display = 'block';
+    // Basic display fields; adjust according to actual PumpFun API response
+    quoteBox.innerHTML = `
+      <div><strong>Price:</strong> 1 ${fromTokenInput.value} ≈ ${quote.price || 'N/A'} ${selectedToToken.symbol}</div>
+      <div><strong>Estimated Received:</strong> ${quote.estimatedReceived || 'N/A'} ${selectedToToken.symbol}</div>
+      <div><strong>Liquidity Available:</strong> ${quote.liquidity || 'N/A'}</div>
+      <div><strong>Slippage Tolerance:</strong> ${quote.slippage || 'N/A'}%</div>
+    `;
+  }
+
+  // Execute swap process
+  async function executeSwap() {
+    setStatus('');
+    if (!latestQuote) {
+      setStatus('Please get a quote before swapping');
+      return;
+    }
+    if (!walletPublicKey) {
+      setStatus('Wallet not connected');
+      return;
+    }
+
+    swapBtn.disabled = true;
+    setStatus('Signing transaction...');
 
     try {
-      const resp = await fetch(`https://api.pumpfun.io/v1/swap/quote`, {
+      // Build message to sign from quote info (PumpFun may require tx or message signing, this is simplified)
+      const swapMessage = new TextEncoder().encode(JSON.stringify({
+        fromToken: fromTokenInput.value,
+        toToken: selectedToToken.symbol,
+        amount: swapAmountInput.value.trim(),
+        quoteId: latestQuote.quoteId || null,
+        timestamp: Date.now()
+      }));
+
+      // Sign message using Phantom wallet
+      const signedMessage = await window.solana.signMessage(swapMessage, 'utf8');
+      const signatureBase64 = btoa(String.fromCharCode(...signedMessage.signature));
+
+      setStatus('Sending swap request to PumpFun...');
+
+      // Submit swap request to PumpFun
+      const swapRes = await fetchJSON(`${PUMPFUN_API_BASE}/swap/execute`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${pumpFunApiKey}`,
-        },
-        body: JSON.stringify({ fromToken, toToken, amount }),
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          walletAddress: walletPublicKey.toBase58(),
+          fromToken: fromTokenInput.value,
+          toToken: selectedToToken.symbol,
+          amount: swapAmountInput.value.trim(),
+          signature: signatureBase64,
+        })
       });
-      if (!resp.ok) {
-        const errText = await resp.text();
-        throw new Error(`Quote API error: ${errText}`);
+
+      if (swapRes.success) {
+        setStatus('Swap executed successfully!');
+        await refreshBalances();
+        clearQuote();
+        swapAmountInput.value = '';
       }
-      const data = await resp.json();
-      lastQuote = data;
-
-      priceSpan.textContent = data.price || 'N/A';
-      estReceivedSpan.textContent = data.estimatedReceived || 'N/A';
-      liquiditySpan.textContent = data.liquidity || 'N/A';
-
-      quoteBox.style.display = 'block';
-      swapBtn.disabled = false;
-      setStatus('Quote loaded, ready for swap');
+      else {
+        throw new Error(swapRes.error || 'Swap failed');
+      }
     } catch (e) {
-      setStatus(`Failed to get quote: ${e.message}`, true);
-      lastQuote = null;
-    } finally {
-      getQuoteBtn.disabled = false;
+      setStatus('Swap failed: ' + e.message);
     }
+    swapBtn.disabled = false;
   }
+
+  // Event listeners
+  connectBtn.addEventListener('click', async () => {
+    await connectWallet();
+  });
 
   getQuoteBtn.addEventListener('click', getQuote);
 
-  // --- Execute swap ---
-  async function executeSwap() {
-    if (!walletProvider || !walletPublicKey) {
-      setStatus('Connect wallet first', true);
-      return;
-    }
-    if (!lastQuote) {
-      setStatus('Get a quote first', true);
-      return;
-    }
-    if(!pumpFunApiKey) {
-      setStatus('Set your PumpFun API key first.', true);
-      return;
-    }
-
-    swapBtn.disabled = true;
-    setStatus('Preparing signature...');
-
-    try {
-      const messageStr = JSON.stringify({
-        fromToken: fromTokenSelect.value,
-        toToken: toTokenSelect.value,
-        amount: amountInput.value.trim(),
-        timestamp: Date.now(),
-      });
-      const encodedMsg = new TextEncoder().encode(messageStr);
-
-      let signed;
-      if (selectedWalletName === "Phantom") {
-        signed = await walletProvider.signMessage(encodedMsg, 'utf8');
-      } else if (selectedWalletName === "Solflare") {
-        signed = await walletProvider.signMessage(encodedMsg);
-      } else {
-        throw new Error(`Unsupported wallet ${selectedWalletName}`);
-      }
-
-      const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signed.signature)));
-
-      setStatus("Sending swap request...");
-
-      const resp = await fetch(`https://api.pumpfun.io/v1/swap/execute`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${pumpFunApiKey}`,
-        },
-        body: JSON.stringify({
-          walletAddress: walletPublicKey.toString(),
-          fromToken: fromTokenSelect.value,
-          toToken: toTokenSelect.value,
-          amount: amountInput.value.trim(),
-          signature: signatureBase64,
-        }),
-      });
-
-      if (!resp.ok) {
-        const errText = await resp.text();
-        throw new Error(`Swap API error: ${errText}`);
-      }
-
-      const data = await resp.json();
-
-      if (data.success) {
-        setStatus(`Swap executed successfully! Tx: ${data.transactionId || 'Unknown'}`, false);
-        resetQuote();
-        amountInput.value = '';
-      } else {
-        setStatus(`Swap failed: ${data.error || 'Unknown error'}`, true);
-      }
-    } catch (e) {
-      setStatus(`Swap failed: ${e.message}`, true);
-    } finally {
-      swapBtn.disabled = false;
-    }
-  }
-
   swapBtn.addEventListener('click', executeSwap);
 
-  // --- Real-time price updates ---
-  function setupWebSocketPrices() {
-    // Replace with your actual PumpFun WS endpoint if available
-    const wsUrl = 'wss://api.pumpfun.io/ws/prices';
-
-    try {
-      const ws = new WebSocket(wsUrl);
-
-      ws.onopen = () => {
-        console.log('WebSocket connected for live prices');
-        setStatus('Live price updates connected');
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg.event === 'price_update' && msg.prices) {
-            updateLivePrices(msg.prices);
-          }
-        } catch (e) {
-          console.error('WS message parse error:', e);
-        }
-      };
-
-      ws.onerror = (err) => {
-        console.error('WebSocket error', err);
-        setStatus('Live price updates error', true);
-      };
-
-      ws.onclose = () => {
-        console.log('WebSocket closed');
-        setStatus('Live price updates disconnected', true);
-        // Reconnect attempt after delay
-        setTimeout(setupWebSocketPrices, 5000);
-      };
-    } catch (err) {
-      console.warn('WebSocket error or not supported:', err);
-      setStatus('Live prices not available', true);
+  // Keep wallet connected persistence check
+  if(window.solana && window.solana.isPhantom) {
+    window.solana.on("disconnect", () => {
+      resetUI();
+    });
+    window.solana.on("connect", () => {
+      walletPublicKey = window.solana.publicKey;
+      if(walletPublicKey) { setupAfterConnect(); }
+    });
+    if(window.solana.isConnected) {
+      walletPublicKey = window.solana.publicKey;
+      setupAfterConnect();
     }
   }
 
-  function updateLivePrices(prices) {
-    pricesList.innerHTML = '';
-    for (const symbol in prices) {
-      if (symbol === 'SOL' || tokens.find(t => t.symbol === symbol)) {
-        const li = document.createElement('li');
-        li.textContent = `${symbol}: ${Number(prices[symbol]).toFixed(6)}`;
-        pricesList.appendChild(li);
-      }
+  // Prevent accidental wallet disconnect by page reload
+  window.addEventListener('beforeunload', e => {
+    if(walletPublicKey) {
+      e.preventDefault();
+      e.returnValue = '';
     }
-  }
-
-  // --- Initialization ---
-  async function init() {
-    // Disable buttons until wallet connected & API key given
-    getQuoteBtn.disabled = true;
-    swapBtn.disabled = true;
-
-    // Real-time updates WS setup (attempt)
-    setupWebSocketPrices();
-  }
-
-  init();
-
-  // Fetch tokens when API key is saved
-  saveApiKeyBtn.addEventListener('click', fetchNewTokens);
-
+  });
 })();
 </script>
-
 </body>
 </html>
